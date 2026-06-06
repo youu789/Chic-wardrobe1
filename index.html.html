@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chic Wardrobe - Chinese Traditional Dress</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--bg:#FBF5EC;--fg:#2D1B0E;--muted:#8B7355;--accent:#C41E3A;--gold:#C9A96E;--card:#FFF;--border:#E8D5C0;--jade:#2E7D5B;--ink:#1A1A2E}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--fg);overflow-x:hidden;min-height:100vh}
+h1,h2,h3,h4,h5{font-family:'Playfair Display',serif}
+#splash{position:fixed;inset:0;z-index:1000;background:var(--ink);display:flex;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s}
+#splash.hidden{opacity:0;visibility:hidden;pointer-events:none}
+#splash h1{font-size:clamp(2.5rem,6vw,5rem);color:var(--gold);letter-spacing:.08em;animation:fadeSlideUp 1.2s ease forwards;opacity:0}
+#splash p{color:rgba(201,169,110,.6);font-size:1.1rem;letter-spacing:.3em;text-transform:uppercase;margin-top:1rem;animation:fadeSlideUp 1.2s ease .4s forwards;opacity:0}
+.screen{display:none;min-height:100vh;animation:fadeIn .5s ease}
+.screen.active{display:flex}
+.skin-btn{width:64px;height:64px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all .3s;position:relative;flex-shrink:0}
+.skin-btn:hover{transform:scale(1.12)}
+.skin-btn.sel{border-color:var(--accent);box-shadow:0 0 0 3px rgba(196,30,58,.25);transform:scale(1.12)}
+.skin-btn.sel::after{content:'\f00c';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.cat-card{position:relative;border-radius:20px;overflow:hidden;cursor:pointer;transition:all .4s cubic-bezier(.25,.46,.45,.94);aspect-ratio:3/4;min-height:320px}
+.cat-card:hover{transform:translateY(-8px);box-shadow:0 24px 48px rgba(45,27,14,.15)}
+.cat-card-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:2rem;background:linear-gradient(to top,rgba(26,26,46,.85) 0%,rgba(26,26,46,.2) 60%,transparent 100%);transition:background .4s}
+.cat-card:hover .cat-card-overlay{background:linear-gradient(to top,rgba(196,30,58,.8) 0%,rgba(196,30,58,.15) 60%,transparent 100%)}
+.garment-card{border-radius:16px;overflow:hidden;cursor:pointer;transition:all .35s;border:3px solid transparent;background:var(--card);box-shadow:0 2px 12px rgba(45,27,14,.06)}
+.garment-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(45,27,14,.12)}
+.garment-card.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(196,30,58,.2),0 12px 32px rgba(45,27,14,.12)}
+.mannequin-container{position:relative;width:260px;height:480px;margin:0 auto}
+.mannequin-container svg{position:absolute;top:0;left:0;width:100%;height:100%}
+.garment-layer{opacity:0;transition:opacity .5s}.garment-layer.visible{opacity:1}
+.dyn-tab{padding:8px 16px;border-radius:10px;border:2px solid var(--border);background:var(--card);cursor:pointer;transition:all .3s;font-size:.85rem;white-space:nowrap;font-weight:600;color:var(--muted)}
+.dyn-tab:hover{border-color:var(--accent);color:var(--accent)}
+.dyn-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.knowledge-card{background:var(--card);border-radius:24px;overflow:hidden;box-shadow:0 8px 40px rgba(45,27,14,.1);border:1px solid var(--border)}
+.knowledge-card .seal{display:inline-block;background:var(--accent);color:#fff;padding:6px 16px;border-radius:4px;font-size:.85rem;letter-spacing:.05em}
+#toast-container{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:2000;display:flex;flex-direction:column;gap:.5rem;align-items:center;pointer-events:none}
+.toast{background:var(--fg);color:var(--bg);padding:14px 28px;border-radius:12px;font-size:.95rem;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:toastIn .4s cubic-bezier(.34,1.56,.64,1) forwards;pointer-events:auto}
+.toast.ach-toast{background:linear-gradient(135deg,#C9A96E,#A8863A);color:var(--ink);font-weight:700}
+.float-decor{position:absolute;opacity:.08;pointer-events:none;animation:floatSlow 8s ease-in-out infinite}
+.overlay-bg{position:fixed;inset:0;z-index:850;background:rgba(26,26,46,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1.5rem;animation:fadeIn .4s}
+.overlay-bg.active{display:flex}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes floatSlow{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-20px) rotate(3deg)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-20px)}}
+.animate-in{opacity:0;transform:translateY(24px);transition:all .6s cubic-bezier(.25,.46,.45,.94)}
+.animate-in.visible{opacity:1;transform:translateY(0)}
+.particle{position:fixed;border-radius:50%;opacity:0;pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.btn-primary{background:var(--accent);color:#fff;padding:14px 36px;border-radius:12px;border:none;font-size:1rem;font-weight:700;cursor:pointer;transition:all .3s;letter-spacing:.03em}
+.btn-primary:hover{background:#a8182f;transform:translateY(-2px);box-shadow:0 8px 20px rgba(196,30,58,.3)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-outline{background:transparent;color:var(--fg);padding:12px 28px;border-radius:12px;border:2px solid var(--border);font-size:.95rem;font-weight:600;cursor:pointer;transition:all .3s}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-gold{background:linear-gradient(135deg,#C9A96E,#A8863A);color:var(--ink);padding:12px 28px;border-radius:12px;border:none;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .3s}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(201,169,110,.4)}
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(251,245,236,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.ach-badge{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;transition:all .4s;position:relative;flex-shrink:0}
+.ach-badge.locked{background:var(--border);color:var(--muted);opacity:.5}
+.ach-badge.unlocked{background:linear-gradient(135deg,#C9A96E,#A8863A);color:var(--ink);box-shadow:0 4px 16px rgba(201,169,110,.4)}
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--accent));border-radius:3px;transition:width .6s ease}
+.fab-group{position:fixed;bottom:2rem;right:2rem;z-index:80;display:flex;flex-direction:column;gap:.75rem;align-items:flex-end}
+.fab-btn{width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .3s;box-shadow:0 4px 16px rgba(0,0,0,.15);position:relative}
+.fab-btn:hover{transform:scale(1.1)}
+.fab-ach{background:linear-gradient(135deg,#C9A96E,#A8863A);color:var(--ink)}
+.fab-share{background:var(--accent);color:#fff}
+.fab-badge-count{position:absolute;top:-4px;right:-4px;background:var(--accent);color:#fff;font-size:.65rem;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+.share-visual-card{background:linear-gradient(135deg,var(--ink) 0%,#2D1B0E 100%);border-radius:20px;padding:2rem;color:#fff;position:relative;overflow:hidden;max-width:420px;width:100%}
+.share-visual-card::before{content:'';position:absolute;top:-50%;right:-50%;width:100%;height:100%;background:radial-gradient(circle,rgba(201,169,110,.15) 0%,transparent 70%);pointer-events:none}
+@media(max-width:768px){.cat-card{min-height:240px}.mannequin-container{width:200px;height:380px}.fab-group{bottom:1rem;right:1rem}}
+</style>
+</head>
+<body>
+<div id="particles"></div>
+<div id="toast-container"></div>
+<div id="splash"><div class="text-center"><h1>Chic Wardrobe</h1><p>Discover Chinese Dress Culture</p></div></div>
+
+<!-- ===== SKIN SCREEN ===== -->
+<div id="screen-skin" class="screen active" style="flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:2rem">
+  <div class="float-decor" style="top:8%;left:6%;font-size:5rem"><i class="fas fa-fan" style="color:var(--accent)"></i></div>
+  <div class="float-decor" style="top:18%;right:8%;font-size:3.5rem;animation-delay:2s"><i class="fas fa-yin-yang" style="color:var(--gold)"></i></div>
+  <div class="float-decor" style="bottom:12%;left:10%;font-size:3rem;animation-delay:4s"><i class="fas fa-spa" style="color:var(--jade)"></i></div>
+  <div style="max-width:560px;width:100%;text-align:center">
+    <p style="color:var(--accent);letter-spacing:.25em;text-transform:uppercase;font-size:.85rem;font-weight:700;margin-bottom:.75rem">Step One</p>
+    <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;margin-bottom:.5rem">Choose Your Skin Tone</h2>
+    <p style="color:var(--muted);font-size:1rem;line-height:1.6;margin-bottom:2rem">Select a skin tone to personalize your mannequin.</p>
+    <div id="skin-options" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem"></div>
+    <div id="avatar-preview" style="margin-bottom:1.5rem;display:none">
+      <div style="width:120px;height:200px;margin:0 auto;position:relative" id="preview-svg-wrap"></div>
+    </div>
+    <button class="btn-primary" id="btn-skin-next" disabled onclick="goToCategories()">Continue <i class="fas fa-arrow-right" style="margin-left:8px"></i></button>
+  </div>
+</div>
+
+<!-- ===== CATEGORY SCREEN ===== -->
+<div id="screen-categories" class="screen" style="flex-direction:column;align-items:center;padding-top:80px;min-height:100vh">
+  <div class="top-nav">
+    <span style="font-family:'Playfair Display',serif;font-weight:700;font-size:1.2rem;color:var(--accent)">Chic Wardrobe</span>
+    <button class="btn-outline" style="padding:8px 18px;font-size:.85rem" onclick="goToSkin()"><i class="fas fa-arrow-left" style="margin-right:6px"></i>Back</button>
+  </div>
+  <div class="text-center animate-in" style="max-width:800px;padding:2rem 2rem 1rem">
+    <p style="color:var(--accent);letter-spacing:.25em;text-transform:uppercase;font-size:.85rem;font-weight:700;margin-bottom:.75rem">Step Two</p>
+    <h2 style="font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;margin-bottom:.5rem">Explore the Wardrobe</h2>
+    <p style="color:var(--muted);font-size:1.05rem;line-height:1.7">Chinese traditional clothing spans millennia. Choose a category to begin.</p>
+  </div>
+  <div id="category-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;max-width:960px;width:100%;padding:1.5rem 2rem 3rem"></div>
+</div>
+
+<!-- ===== DRESSING ROOM ===== -->
+<div id="screen-dressing" class="screen" style="flex-direction:column;padding-top:80px;min-height:100vh">
+  <div class="top-nav">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-family:'Playfair Display',serif;font-weight:700;font-size:1.2rem;color:var(--accent)">Chic Wardrobe</span>
+      <span style="color:var(--muted);font-size:.85rem" id="nav-cat-label"></span>
+    </div>
+    <button class="btn-outline" style="padding:8px 18px;font-size:.85rem" onclick="goToCategories()"><i class="fas fa-arrow-left" style="margin-right:6px"></i>Categories</button>
+  </div>
+  <div style="display:flex;flex:1;flex-wrap:wrap;max-width:1200px;margin:0 auto;width:100%">
+    <div style="flex:1;min-width:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;position:sticky;top:80px;align-self:flex-start">
+      <h3 style="font-size:1.2rem;font-weight:700;margin-bottom:1rem">Your Look</h3>
+      <div class="mannequin-container" id="mannequin-svg"></div>
+      <div style="display:flex;gap:.75rem;margin-top:1.25rem">
+        <button class="btn-outline" style="font-size:.82rem;padding:8px 18px" onclick="clearOutfit()"><i class="fas fa-undo" style="margin-right:5px"></i>Reset</button>
+        <button class="btn-primary" style="font-size:.82rem;padding:8px 18px" id="btn-complete" disabled onclick="showKnowledge()"><i class="fas fa-book-open" style="margin-right:5px"></i>Learn More</button>
+      </div>
+      <div id="outfit-summary" style="margin-top:.75rem;text-align:center;min-height:1.5rem"><p style="color:var(--muted);font-size:.85rem">Select a garment to dress your figure</p></div>
+    </div>
+    <div style="flex:1.5;min-width:300px;padding:2rem;border-left:1px solid var(--border)">
+      <div id="dynasty-tabs" style="display:none;margin-bottom:1.25rem;overflow-x:auto;padding-bottom:.5rem"></div>
+      <div id="garment-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== KNOWLEDGE OVERLAY ===== -->
+<div id="knowledge-overlay" class="overlay-bg" onclick="if(event.target===this)closeKnowledge()">
+  <div class="knowledge-card" style="max-width:780px;width:100%;max-height:90vh;overflow-y:auto" id="k-card"></div>
+</div>
+
+<!-- ===== ACHIEVEMENT PANEL ===== -->
+<div id="ach-overlay" class="overlay-bg" onclick="if(event.target===this)closeAchPanel()">
+  <div style="max-width:580px;width:100%;max-height:85vh;overflow-y:auto;background:var(--card);border-radius:24px;box-shadow:0 16px 48px rgba(0,0,0,.2);position:relative">
+    <button onclick="closeAchPanel()" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,.06);border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;z-index:5" aria-label="Close"><i class="fas fa-times"></i></button>
+    <div style="background:linear-gradient(135deg,var(--ink),#3D2B1A);padding:2rem 2rem 1.5rem;border-radius:24px 24px 0 0;text-align:center;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-30px;right:-30px;font-size:5rem;opacity:.05;font-family:'Playfair Display',serif;font-weight:900">功</div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--gold);margin-bottom:.25rem">Achievements</h2>
+      <p style="color:rgba(255,255,255,.5);font-size:.85rem" id="ach-prog-text">0 / 11</p>
+      <div class="progress-bar" style="max-width:220px;margin:.75rem auto 0"><div class="progress-bar-fill" id="ach-prog-bar" style="width:0%"></div></div>
+    </div>
+    <div style="padding:1.25rem" id="ach-grid"></div>
+  </div>
+</div>
+
+<!-- ===== SHARE PANEL ===== -->
+<div id="share-overlay" class="overlay-bg" onclick="if(event.target===this)closeSharePanel()">
+  <div style="max-width:480px;width:100%;max-height:85vh;overflow-y:auto;background:var(--card);border-radius:24px;box-shadow:0 16px 48px rgba(0,0,0,.2);position:relative">
+    <button onclick="closeSharePanel()" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,.06);border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;z-index:5" aria-label="Close"><i class="fas fa-times"></i></button>
+    <div style="padding:2rem" id="share-content"></div>
+  </div>
+</div>
+
+<!-- FABs -->
+<div class="fab-group" id="fab-group" style="display:none">
+  <button class="fab-btn fab-share" onclick="openSharePanel()" title="Share"><i class="fas fa-share-alt"></i></button>
+  <button class="fab-btn fab-ach" onclick="openAchPanel()" title="Achievements"><i class="fas fa-trophy"></i><span class="fab-badge-count" id="fab-badge">0</span></button>
+</div>
+
+<script>
+// ============================
+// DATA
+// ============================
+const SKIN_TONES=[
+  {id:'fair',name:'Fair Porcelain',color:'#FDDCB5'},
+  {id:'light',name:'Light Beige',color:'#F1C27D'},
+  {id:'medium',name:'Warm Honey',color:'#D4A574'},
+  {id:'olive',name:'Golden Olive',color:'#B8865B'},
+  {id:'tan',name:'Sun-kissed Bronze',color:'#8D5524'},
+  {id:'deep',name:'Rich Mahogany',color:'#5C3310'}
+];
+const CATEGORIES=[
+  {id:'qipao',name:'Qipao',nameZh:'旗袍',subtitle:'The Iconic Cheongsam',desc:'Elegant silhouettes from Manchu origins to global icon.',image:'https://picsum.photos/seed/qipao-cat2/600/800',accent:'#C41E3A'},
+  {id:'hanfu',name:'Hanfu',nameZh:'汉服',subtitle:'Garments of the Han',desc:'Flowing robes spanning dynasties of Chinese civilization.',image:'https://picsum.photos/seed/hanfu-cat3/600/800',accent:'#2E7D5B'},
+  {id:'ethnic',name:'Ethnic Dress',nameZh:'民族服饰',subtitle:"China's Diverse Heritage",desc:'Vibrant textiles from China\'s 55 ethnic minority groups.',image:'https://picsum.photos/seed/ethnic-cat3/600/800',accent:'#1A6B7A'}
+];
+const DYNASTIES=[
+  {id:'zhanguo',name:'Warring States',nameZh:'战国',era:'475–221 BC'},
+  {id:'weijin',name:'Wei-Jin',nameZh:'魏晋',era:'220–589 AD'},
+  {id:'tang',name:'Tang',nameZh:'唐',era:'618–907 AD'},
+  {id:'song',name:'Song',nameZh:'宋',era:'960–1279 AD'},
+  {id:'ming',name:'Ming',nameZh:'明',era:'1368–1644 AD'}
+];
+const G={
+qipao:[
+  {id:'qipao-1',name:'Classic Shanghai Qipao',nameZh:'海派旗袍',era:'1920s–1930s Shanghai',type:'Mandarin Collar · Side Slit',
+   desc:'The quintessential Shanghai-style qipao with fitted waist, high mandarin collar and decorative pankou (frog buttons), blending Manchu elements with Western tailoring.',
+   culture:'The qipao became a symbol of modern Chinese womanhood — its form-fitting silhouette represented women\'s liberation and their emerging role in 1930s Shanghai society.',
+   craft:'Traditional qipao requires 20+ precise measurements. Pankou frog buttons are handcrafted from fabric strips; a single complex button can take hours. High-end qipao uses Su embroidery (苏绣).',
+   color:'#8B1A1A',color2:'#1A1A2E'},
+  {id:'qipao-2',name:'Embroidered Silk Qipao',nameZh:'刺绣旗袍',era:'Modern Revival',type:'Wide Collar · Floral Motifs',
+   desc:'A contemporary interpretation featuring wide sleeves and intricate floral patterns hand-embroidered on luxurious silk, bridging traditional craftsmanship with modern aesthetics.',
+   culture:'Embroidery motifs carry deep symbolism: peonies for prosperity, lotus for purity, plum blossoms for resilience. Each motif tells a story in Chinese culture.',
+   craft:'Su embroidery can contain millions of stitches. Artisans split a single silk thread into 16+ strands to achieve photographic detail. A masterwork panel takes months.',
+   color:'#1A6B7A',color2:'#0D3B45'},
+  {id:'qipao-3',name:'Modern Velvet Qipao',nameZh:'丝绒旗袍',era:'Contemporary',type:'Slim Fit · Luxurious Velvet',
+   desc:'A bold contemporary take in sumptuous velvet with a floor-length silhouette. The minimalist design proves the qipao continues to evolve as a living fashion tradition.',
+   culture:'Modern qipao appeared at the Met Gala, Hollywood red carpets, and luxury fashion houses — transcending its origins to become a universal symbol of elegance.',
+   craft:'Velvet qipao construction requires specialized handling of the fabric\'s nap. Modern versions incorporate invisible zippers and precision dart work from Western haute couture.',
+   color:'#2D0A31',color2:'#1A0520'}
+],
+hanfu:{
+  zhanguo:[
+    {id:'hanfu-zg-1',name:'Zhanguo Pao',nameZh:'战国袍',era:'Warring States (475–221 BC)',type:'Deep Robe · Broad Sleeves',
+     desc:'The Zhanguo Pao features dramatic proportions — wide sleeves, deep overlapping front, and a ground-sweeping hem. This imposing silhouette conveyed the dignity of Warring States aristocracy.',
+     culture:'In this era of philosophical debate, garments communicated social status and philosophical alignment. The poet Qu Yuan described ideal garments adorned with fragrant herbs as metaphors for moral purity in "Li Sao" (《离骚》).',
+     craft:'Excavations at Jiangling reveal silk with intricate dragon-and-phoenix patterns using complex jacquard techniques. "Dancing Figure" bronze vessels show the dramatic sleeve movements these robes enabled.',
+     color:'#4A1F15',color2:'#2A0F0A'}
+  ],
+  weijin:[
+    {id:'hanfu-wj-1',name:'Zaju Chuisha Fu',nameZh:'杂裾垂髾服',era:'Wei-Jin (220–589 AD)',type:'Trailing Hem · Flying Ribbons',
+     desc:'One of the most ethereal garments in Chinese history. "Chuisha" refers to trailing triangular fabric pieces hanging from the waist, creating a sense of weightless grace. This garment embodies the Wei-Jin pursuit of transcending worldly concerns.',
+     culture:'The Wei-Jin period valued personal freedom and spiritual transcendence. The flowing, trailing elements physically manifested the desire to float free from earthly constraints — a visual rejection of rigid Confucian formality.',
+     craft:'Multiple layered ribbons (襳) and trailing hems (髾) required exceptional fabric handling. Artisans used gauze-weave silk (罗) of extraordinary lightness — some surviving fragments are nearly transparent.',
+     color:'#5B7A8A',color2:'#2D3D45'}
+  ],
+  tang:[
+    {id:'hanfu-tang-1',name:'Yuanlingpao',nameZh:'圆领袍',era:'Tang Dynasty (618–907 AD)',type:'Round Collar · Court Attire',
+     desc:'The Round-Collar Robe became dominant formal attire during the cosmopolitan Tang Dynasty. The round neckline reflects Central Asian and Persian influences that flooded into Chang\'an along the Silk Road.',
+     culture:'Tang Chang\'an was the world\'s largest city, home to Persians, Arabs, Koreans, and Central Asians. The round collar demonstrates how Chinese fashion has always absorbed and transformed foreign influences.',
+     craft:'Tang textile arts reached unprecedented heights. Officials\' robes featured woven rank badges. Dyeing techniques — including resist-dyeing and clamp-resist — produced patterns of extraordinary complexity.',
+     color:'#1A3A5C',color2:'#0D1F33'},
+    {id:'hanfu-tang-2',name:'Qixiong Ruqun',nameZh:'齐胸襦裙',era:'Tang Dynasty (618–907 AD)',type:'Chest-High Skirt · Short Jacket',
+     desc:'Perhaps the most iconic Tang women\'s garment. "Qixiong" means chest-high — the skirt is tied above the bust, creating an elongated silhouette with fabric cascading in elegant folds.',
+     culture:'The Qixiong Ruqun reflected Tang confidence about the female body. Tang women rode horses, played polo, and participated in public life with a freedom unusual in Chinese history.',
+     craft:'Tang silk weaving produced 20+ types of silk weave. Skirts were often made from fine silk gauze, sometimes requiring 30+ meters of fabric. The wide pleating was achieved through careful folding and stitching.',
+     color:'#A0283C',color2:'#5C1420'}
+  ],
+  song:[
+    {id:'hanfu-song-1',name:'Beizi',nameZh:'褙子',era:'Song Dynasty (960–1279 AD)',type:'Open-Front Jacket · Side Slits',
+     desc:'The quintessential Song outer garment — an open-front jacket with parallel collars and side slits extending to the waist. Worn by both men and women, the Beizi represents the Song aesthetic of refined understatement.',
+     culture:'Song culture valued intellectual refinement over Tang exuberance. The Beizi\'s clean vertical lines reflected Neo-Confucian emphasis on restraint and inner virtue over outward display.',
+     craft:'Song textile arts are the pinnacle of Chinese silk weaving. The Beizi was often made from "Luo" (罗) gauze so fine that layered garments remained translucent. Song weavers also developed satin-weave brocade of extraordinary sheen.',
+     color:'#6B7A5A',color2:'#3A4530'},
+    {id:'hanfu-song-2',name:'Song Jiaoling Ruqun',nameZh:'宋制交领襦裙',era:'Song Dynasty (960–1279 AD)',type:'Cross-Collar · Wrap Right',
+     desc:'The Song-style Jiaoling Ruqun maintains the fundamental "Youren" (right-over-left) wrap but with distinctive Song proportions — narrower sleeves, more fitted bodice, and longer flowing skirt than Tang styles.',
+     culture:'Song women favored the more modest cross-collar ruqun over Tang\'s chest-high skirts. This was part of an aesthetic philosophy valuing subtlety, layering, and the beauty of concealment.',
+     craft:'Song "painting stitch" (画绣) used split silk threads as fine as 1/64th of a normal strand to create embroidery virtually indistinguishable from brush painting. A ruqun might feature exquisite flowers along collar and cuffs.',
+     color:'#7A5A3A',color2:'#4A3520'}
+  ],
+  ming:[
+    {id:'hanfu-ming-1',name:'Mamianqun',nameZh:'马面裙',era:'Ming Dynasty (1368–1644 AD)',type:'Horse-Face Skirt · Overlapping Panels',
+     desc:'The Mamianqun consists of two overlapping rectangular panels ("horse faces") at front and back with pleated sides. The flat panels create an architectural silhouette while side pleats allow movement.',
+     culture:'The Mamianqun has experienced a remarkable 21st-century revival as the most popular modern Hanfu style. The name likely derives from the projecting bastions of city walls, which the flat panels resemble.',
+     craft:'Ming skirt construction required precise calculation. Side pleats were hand-pressed and set with rice paste. Panels were decorated with gold-thread embroidery or gold-leaf appliqué (织金). The finest used Nanjing Yunjin (云锦) Cloud Brocade.',
+     color:'#1A3A5C',color2:'#0D1F33'},
+    {id:'hanfu-ming-2',name:'Liling Changshan',nameZh:'立领长衫',era:'Ming Dynasty (1368–1644 AD)',type:'Standing Collar · Long Garment',
+     desc:'Features a distinctive standing collar rising around the neck — a Ming innovation distinguishing later Ming fashion. This high collar frames the face and creates an upright, dignified posture.',
+     culture:'The standing collar was a significant evolution in Chinese dress. Unlike flat collars of earlier dynasties, it added structural emphasis on formal bearing. This innovation directly influenced the qipao\'s mandarin collar.',
+     craft:'Ming button-making reached new artistry — gold or silver buttons shaped like flowers and auspicious symbols, each a miniature sculpture. The collar was stiffened with multiple layers of silk organdy interfacing.',
+     color:'#2E4A3E',color2:'#1A2E24'}
+  ]
+},
+ethnic:[
+  {id:'ethnic-1',name:'Miao Silver & Pleated Skirt',nameZh:'苗族银饰百褶裙',era:'Southwest China',type:'Silver Jewelry · Batik-dyed',
+   desc:'A complete Miao festive outfit can include 10+ kg of handcrafted silver — headdresses, neck rings, chest plates, bracelets — each representing generations of family wealth and artistic skill. The pleated skirt is dyed using traditional batik.',
+   culture:'For the Miao, silver is a spiritual shield against evil and a record of family heritage. During Miao New Year, women wear complete silver regalia in spectacular displays.',
+   craft:'Miao silversmiths draw wire by hand, coil, hammer, and solder intricate patterns. A single headdress contains thousands of silver elements. Batik involves painting wax onto fabric before indigo dyeing.',
+   color:'#1A3A5C',color2:'#0D1F33'},
+  {id:'ethnic-2',name:'Tibetan Chuba',nameZh:'藏族楚巴',era:'Tibetan Plateau',type:'Wrap Coat · Wool & Silk',
+   desc:'The Chuba is designed for extreme plateau temperature swings. One sleeve is often left free — a practical adaptation for quick temperature regulation in conditions that swing 30°C between dawn and midday.',
+   culture:'The Chuba communicates social identity: nomadic herders wear sheepskin; aristocrats favor silk brocade. The free sleeve is a survival adaptation refined over millennia.',
+   craft:'Tibetan "pulu" handwoven wool comes in vivid stripes. Ceremonial Chuba may incorporate Chinese silk brocade from the Tea-Horse Road. Intricate knot-work and appliqué represent Central Asia\'s finest decorative arts.',
+   color:'#8B1A1A',color2:'#4A0D0D'},
+  {id:'ethnic-3',name:'Uyghur Atlas Silk',nameZh:'维吾尔族艾德莱斯裙',era:'Xinjiang',type:'Ikat-dyed Silk · Flowing Robe',
+   desc:'Atlas silk is a spectacular ikat textile where threads are resist-dyed before weaving, creating blurred-edge patterns in vibrant yellows, reds, and greens. The flowing A-line dress is worn during celebrations across Xinjiang.',
+   culture:'Atlas silk represents the Silk Road\'s cultural crossroads. The ikat technique traveled from Southeast Asia through Central Asia, refined by Uyghur artisans into their own distinctive art.',
+   craft:'Ikat is among the world\'s most demanding textile crafts. Thread bundles are bound, dyed, unbound, re-bound, and re-dyed up to seven times. The dyer must imagine the final pattern — revealed only when woven. Designated National Intangible Cultural Heritage in 2008.',
+   color:'#B8860B',color2:'#8B6508'},
+  {id:'ethnic-4',name:'Mongol Terlig',nameZh:'蒙古族蒙古袍',era:'Mongolian Steppe',type:'Long Robe · Wide Sash · Riding Slits',
+   desc:'The Mongol Terlig is designed for horseback life on the vast steppe. A high collar, wide overlapping front, and distinctive back riding slit allow comfortable mounting. Extra-long sleeves serve as hand protection against bitter cold.',
+   culture:'For Mongolian herders, the Terlig is a portable survival system. The wide sash protects kidneys from cold wind and holds tools, snuff bottles, and eating knives. The riding slit is a uniquely Mongolian equestrian innovation.',
+   craft:'Ceremonial Terlig feature "Mongolian knot" embroidery using couched gold or silver thread for bold geometric patterns. Unique felting techniques create thick, windproof winter robes for survival at -40°C.',
+   color:'#1A4A7A',color2:'#0D2540'},
+  {id:'ethnic-5',name:'Manchu Qizhuang',nameZh:'满族旗装',era:'Qing Dynasty (1644–1912)',type:'Straight-Cut · Horse-Hoof Cuffs',
+   desc:'The Manchu Qizhuang features a straight-cut silhouette with distinctive "horse-hoof" cuffs (马蹄袖) — extensions covering the back of the hand that can be rolled up. This garment is the direct ancestor of the modern qipao.',
+   culture:'During the Qing Dynasty, Manchu women wore this straight-cut robe while Han women kept their own skirt-and-jacket ensembles. The fusion of Manchu silhouette with Han tailoring birthed the modern qipao in the 1920s.',
+   craft:'The most elaborate Qizhuang featured "Eighteen Rollings" (十八镶) — up to 18 layers of border trim. Horse-hoof cuffs required precise pattern-cutting. Pankou (盘扣) frog buttons were shaped into butterflies, orchids, and auspicious motifs.',
+   color:'#4A0D4A',color2:'#2A082A'}
+]
+};
+const ALL_GARMENTS=[...G.qipao,...Object.values(G.hanfu).flat(),...G.ethnic];
+const TOTAL_GARMENTS=ALL_GARMENTS.length;
+
+// ============================
+// ACHIEVEMENTS
+// ============================
+const ACHIEVEMENTS=[
+  {id:'first-steps',name:'First Steps',desc:'Select your skin tone and begin the journey',icon:'fa-shoe-prints'},
+  {id:'curious-explorer',name:'Curious Explorer',desc:'Visit all 3 clothing categories',icon:'fa-compass'},
+  {id:'qipao-aficionado',name:'Qipao Aficionado',desc:'Try all 3 Qipao styles',icon:'fa-star'},
+  {id:'hanfu-scholar',name:'Hanfu Scholar',desc:'Try all 8 Hanfu styles',icon:'fa-book'},
+  {id:'ethnic-adventurer',name:'Ethnic Adventurer',desc:'Try all 5 Ethnic styles',icon:'fa-globe-asia'},
+  {id:'knowledge-seeker',name:'Knowledge Seeker',desc:'Read your first knowledge card',icon:'fa-lightbulb'},
+  {id:'culture-deep-dive',name:'Culture Deep Dive',desc:'Read 5 knowledge cards',icon:'fa-graduation-cap'},
+  {id:'fashion-historian',name:'Fashion Historian',desc:'Read all 16 knowledge cards',icon:'fa-landmark'},
+  {id:'complete-wardrobe',name:'Complete Wardrobe',desc:'Try all 16 garments',icon:'fa-trophy'},
+  {id:'dynasty-connoisseur',name:'Dynasty Connoisseur',desc:'Visit all 5 Hanfu dynasty sections',icon:'fa-hourglass-half'},
+  {id:'cultural-ambassador',name:'Cultural Ambassador',desc:'Share your journey with others',icon:'fa-share-alt'}
+];
+
+// ============================
+// STATE
+// ============================
+let state={screen:'skin',skin:null,cat:null,dyn:null,selGarment:null,gLayers:{}};
+let prog={catsVisited:[],dynsVisited:[],garmentsTried:[],cardsRead:[],achievements:[],_skin:null};
+function loadP(){try{const s=localStorage.getItem('cwProg2');if(s)prog=JSON.parse(s)}catch(e){}}
+function saveP(){try{localStorage.setItem('cwProg2',JSON.stringify(prog))}catch(e){}}
+
+// ============================
+// ACHIEVEMENT ENGINE
+// ============================
+function checkAch(){
+  const p=prog;let nu=[];
+  const ck={
+    'first-steps':()=>state.skin!==null,
+    'curious-explorer':()=>p.catsVisited.length>=3,
+    'qipao-aficionado':()=>G.qipao.every(g=>p.garmentsTried.includes(g.id)),
+    'hanfu-scholar':()=>Object.values(G.hanfu).flat().every(g=>p.garmentsTried.includes(g.id)),
+    'ethnic-adventurer':()=>G.ethnic.every(g=>p.garmentsTried.includes(g.id)),
+    'knowledge-seeker':()=>p.cardsRead.length>=1,
+    'culture-deep-dive':()=>p.cardsRead.length>=5,
+    'fashion-historian':()=>p.cardsRead.length>=TOTAL_GARMENTS,
+    'complete-wardrobe':()=>p.garmentsTried.length>=TOTAL_GARMENTS,
+    'dynasty-connoisseur':()=>p.dynsVisited.length>=5,
+    'cultural-ambassador':()=>p.achievements.includes('cultural-ambassador')
+  };
+  ACHIEVEMENTS.forEach(a=>{if(!p.achievements.includes(a.id)&&ck[a.id]&&ck[a.id]()){p.achievements.push(a.id);nu.push(a)}});
+  if(nu.length>0){saveP();nu.forEach((a,i)=>setTimeout(()=>achToast(a),i*800));updFab();}
+}
+function achToast(a){const c=document.getElementById('toast-container'),t=document.createElement('div');t.className='toast ach-toast';t.innerHTML=`<i class="fas ${a.icon}" style="margin-right:8px"></i>Achievement: ${a.name}`;c.appendChild(t);setTimeout(()=>{t.style.animation='toastOut .4s ease forwards';setTimeout(()=>t.remove(),400)},3500)}
+function updFab(){const b=document.getElementById('fab-badge');if(b)b.textContent=prog.achievements.length}
+function openAchPanel(){document.getElementById('ach-overlay').classList.add('active');document.body.style.overflow='hidden';renderAchGrid()}
+function closeAchPanel(){document.getElementById('ach-overlay').classList.remove('active');document.body.style.overflow=''}
+function renderAchGrid(){
+  const u=prog.achievements,grid=document.getElementById('ach-grid');
+  document.getElementById('ach-prog-text').textContent=`${u.length} / ${ACHIEVEMENTS.length}`;
+  document.getElementById('ach-prog-bar').style.width=`${u.length/ACHIEVEMENTS.length*100}%`;
+  grid.innerHTML=ACHIEVEMENTS.map(a=>{const un=u.includes(a.id);return`<div style="display:flex;gap:.85rem;align-items:center;padding:.85rem;border-radius:12px;margin-bottom:.6rem;background:${un?'linear-gradient(135deg,rgba(201,169,110,.08),rgba(201,169,110,.03))':'rgba(0,0,0,.02)'};border:1px solid ${un?'rgba(201,169,110,.3)':'var(--border)'}"><div class="ach-badge ${un?'unlocked':'locked'}"><i class="fas ${a.icon}"></i></div><div style="flex:1"><h4 style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:${un?'var(--fg)':'var(--muted)'}">${a.name}</h4><p style="font-size:.78rem;color:${un?'var(--muted)':'rgba(139,115,85,.5)'};margin-top:2px">${a.desc}</p></div>${un?'<i class="fas fa-check-circle" style="color:var(--gold);font-size:1.1rem"></i>':'<i class="fas fa-lock" style="color:var(--border);font-size:.9rem"></i>'}</div>`}).join('');
+}
+
+// ============================
+// SHARE
+// ============================
+function openSharePanel(){document.getElementById('share-overlay').classList.add('active');document.body.style.overflow='hidden';renderShare()}
+function closeSharePanel(){document.getElementById('share-overlay').classList.remove('active');document.body.style.overflow=''}
+function renderShare(){
+  const u=prog.achievements,gt=prog.garmentsTried.length,cr=prog.cardsRead.length;
+  const txt=`🇨🇳 Exploring Chinese dress culture on Chic Wardrobe!\n\n👗 Garments tried: ${gt}/${TOTAL_GARMENTS}\n📚 Cards read: ${cr}/${TOTAL_GARMENTS}\n🏆 Achievements: ${u.length}/11\n\nDiscover Qipao, Hanfu & Ethnic Dress!`;
+  document.getElementById('share-content').innerHTML=`
+    <div style="text-align:center;margin-bottom:1.25rem"><p style="color:var(--accent);letter-spacing:.2em;text-transform:uppercase;font-size:.78rem;font-weight:700;margin-bottom:.5rem">Share Your Journey</p><h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700">Spread Chinese Dress Culture</h2></div>
+    <div class="share-visual-card" style="margin:0 auto 1.25rem"><div style="position:relative;z-index:1"><p style="color:var(--gold);font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;margin-bottom:.2rem">Chic Wardrobe</p><p style="color:rgba(255,255,255,.5);font-size:.75rem;letter-spacing:.15em;margin-bottom:1.25rem">CHINESE DRESS CULTURE</p><div style="display:flex;gap:1.75rem;margin-bottom:1.25rem"><div><p style="color:var(--gold);font-size:1.6rem;font-weight:900;font-family:'Playfair Display',serif">${gt}</p><p style="color:rgba(255,255,255,.5);font-size:.7rem">Garments</p></div><div><p style="color:var(--gold);font-size:1.6rem;font-weight:900;font-family:'Playfair Display',serif">${cr}</p><p style="color:rgba(255,255,255,.5);font-size:.7rem">Cards Read</p></div><div><p style="color:var(--gold);font-size:1.6rem;font-weight:900;font-family:'Playfair Display',serif">${u.length}</p><p style="color:rgba(255,255,255,.5);font-size:.7rem">Achievements</p></div></div>${u.length>0?`<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.75rem">${u.slice(0,4).map(id=>{const a=ACHIEVEMENTS.find(x=>x.id===id);return a?`<span style="background:rgba(201,169,110,.2);color:var(--gold);padding:3px 8px;border-radius:5px;font-size:.7rem"><i class="fas ${a.icon}" style="margin-right:3px"></i>${a.name}</span>`:''}).join('')}</div>`:''}<div style="border-top:1px solid rgba(255,255,255,.1);padding-top:.6rem"><p style="color:rgba(255,255,255,.35);font-size:.72rem;font-style:italic">"Every stitch tells a story spanning millennia."</p></div></div></div>
+    <div style="margin-bottom:1.25rem"><p style="font-size:.85rem;font-weight:700;margin-bottom:.5rem"><i class="fas fa-copy" style="margin-right:6px;color:var(--accent)"></i>Copy Share Text</p><div style="background:rgba(0,0,0,.03);border:1px solid var(--border);border-radius:10px;padding:.85rem;font-size:.82rem;line-height:1.6;white-space:pre-wrap;max-height:140px;overflow-y:auto" id="share-txt">${txt}</div><button class="btn-primary" style="margin-top:.6rem;width:100%;padding:11px" onclick="copyShare()"><i class="fas fa-clipboard" style="margin-right:6px"></i>Copy to Clipboard</button></div>
+    <div style="background:linear-gradient(135deg,rgba(46,125,91,.06),rgba(201,169,110,.06));border-radius:14px;padding:1.1rem;border:1px solid rgba(46,125,91,.15);font-size:.8rem;line-height:1.65;color:var(--muted)"><p style="font-weight:700;color:var(--fg);margin-bottom:.5rem"><i class="fas fa-rocket" style="margin-right:6px;color:var(--jade)"></i>How to Share This App</p><p style="margin-bottom:.4rem"><strong style="color:var(--fg)">1.</strong> Save this HTML file</p><p style="margin-bottom:.4rem"><strong style="color:var(--fg)">2.</strong> Upload to GitHub Pages, Netlify, or Vercel (free)</p><p style="margin-bottom:.4rem"><strong style="color:var(--fg)">3.</strong> Send the link to friends worldwide</p><p><strong style="color:var(--fg)">4.</strong> Or just drag the file into a chat — anyone can open it!</p></div>
+    ${!prog.achievements.includes('cultural-ambassador')?`<div style="text-align:center;margin-top:1rem"><button class="btn-gold" onclick="unlockAmb()"><i class="fas fa-share-alt" style="margin-right:6px"></i>I've Shared — Unlock Ambassador</button></div>`:'<p style="text-align:center;margin-top:.75rem;color:var(--gold);font-weight:700;font-size:.85rem"><i class="fas fa-check-circle" style="margin-right:4px"></i>Ambassador unlocked!</p>'}`;
+}
+function copyShare(){const t=document.getElementById('share-txt').textContent;navigator.clipboard.writeText(t).then(()=>showToast('Copied!')).catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();showToast('Copied!')})}
+function unlockAmb(){if(!prog.achievements.includes('cultural-ambassador')){prog.achievements.push('cultural-ambassador');saveP();checkAch();updFab();renderShare()}}
+
+// ============================
+// TOAST
+// ============================
+function showToast(m){const c=document.getElementById('toast-container'),t=document.createElement('div');t.className='toast';t.textContent=m;c.appendChild(t);setTimeout(()=>{t.style.animation='toastOut .4s ease forwards';setTimeout(()=>t.remove(),400)},2500)}
+
+// ============================
+// NAVIGATION
+// ============================
+function switchScr(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const t=document.getElementById('screen-'+id);if(t){t.classList.add('active');setTimeout(()=>t.querySelectorAll('.animate-in').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),i*100)),80)}state.screen=id;document.getElementById('fab-group').style.display=id==='skin'?'none':'flex';window.scrollTo({top:0,behavior:'smooth'})}
+function goToSkin(){switchScr('skin')}
+function goToCategories(){if(!state.skin){showToast('Please select a skin tone first');return}if(!prog.achievements.includes('first-steps'))checkAch();switchScr('categories');renderCatCards()}
+function goToDressing(catId){
+  state.cat=catId;state.selGarment=null;state.gLayers={};state.dyn=null;
+  const cat=CATEGORIES.find(c=>c.id===catId);
+  document.getElementById('nav-cat-label').textContent='/ '+cat.name;
+  if(!prog.catsVisited.includes(catId)){prog.catsVisited.push(catId);saveP();checkAch()}
+  const dtEl=document.getElementById('dynasty-tabs');
+  if(catId==='hanfu'){dtEl.style.display='flex';dtEl.style.gap='.5rem';renderDynTabs();state.dyn='zhanguo';if(!prog.dynsVisited.includes('zhanguo')){prog.dynsVisited.push('zhanguo');saveP();checkAch()}}
+  else{dtEl.style.display='none';dtEl.innerHTML=''}
+  renderGarGrid();renderMannequin();updOutfit();switchScr('dressing');
+}
+
+// ============================
+// SKIN SELECTION
+// ============================
+function renderSkinOpts(){
+  const c=document.getElementById('skin-options');c.innerHTML='';
+  SKIN_TONES.forEach(t=>{const b=document.createElement('button');b.className='skin-btn';b.style.background=t.color;b.title=t.name;b.setAttribute('aria-label',t.name);b.onclick=()=>selSkin(t);c.appendChild(b)});
+}
+function selSkin(t){
+  state.skin=t;document.querySelectorAll('.skin-btn').forEach(b=>b.classList.remove('sel'));
+  const idx=SKIN_TONES.indexOf(t),btns=document.querySelectorAll('.skin-btn');if(btns[idx])btns[idx].classList.add('sel');
+  prog._skin=t.id;saveP();updPreview();document.getElementById('btn-skin-next').disabled=false;
+}
+function updPreview(){
+  const w=document.getElementById('avatar-preview');if(!state.skin)return;w.style.display='block';
+  const sk=state.skin.color,skD=darken(sk,15);
+  let s=`<svg viewBox="0 0 140 260" xmlns="http://www.w3.org/2000/svg">`;
+  s+=`<circle cx="70" cy="45" r="28" fill="${sk}" stroke="${skD}" stroke-width="0.5"/>`;
+  s+=`<rect x="60" y="72" width="20" height="16" rx="5" fill="${sk}"/>`;
+  s+=`<path d="M42,90 Q40,88 42,84 L54,80 Q62,78 70,78 Q78,78 86,80 L98,84 Q100,88 98,90 L100,140 Q100,148 92,150 L48,150 Q40,148 40,140 Z" fill="${sk}" stroke="${skD}" stroke-width="0.5"/>`;
+  s+=`</svg>`;
+  document.getElementById('preview-svg-wrap').innerHTML=s;
+}
+
+// ============================
+// CATEGORY CARDS
+// ============================
+function renderCatCards(){
+  const g=document.getElementById('category-grid');g.innerHTML='';
+  CATEGORIES.forEach((cat,i)=>{
+    const garments=cat.id==='hanfu'?Object.values(G.hanfu).flat():G[cat.id];
+    const tried=garments.filter(g=>prog.garmentsTried.includes(g.id)).length;
+    const d=document.createElement('div');d.className='cat-card animate-in';d.style.animationDelay=(i*.15)+'s';d.onclick=()=>goToDressing(cat.id);
+    d.innerHTML=`<img src="${cat.image}" alt="${cat.name}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0"><div class="cat-card-overlay"><p style="color:var(--gold);font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px">${cat.nameZh}</p><h3 style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:white;margin-bottom:5px">${cat.name}</h3><p style="color:rgba(255,255,255,.7);font-size:.88rem;margin-bottom:5px">${cat.subtitle}</p><p style="color:rgba(255,255,255,.5);font-size:.8rem;line-height:1.4;margin-bottom:8px">${cat.desc}</p><div style="display:flex;align-items:center;justify-content:space-between"><span style="color:white;font-size:.85rem;font-weight:600">Explore <i class="fas fa-arrow-right" style="margin-left:5px"></i></span>${tried>0?`<span style="background:rgba(201,169,110,.3);color:var(--gold);padding:3px 9px;border-radius:5px;font-size:.72rem">${tried}/${garments.length}</span>`:''}</div></div>`;
+    g.appendChild(d);
+  });
+}
+
+// ============================
+// DYNASTY TABS
+// ============================
+function renderDynTabs(){
+  const c=document.getElementById('dynasty-tabs');c.innerHTML='';
+  DYNASTIES.forEach(d=>{
+    const b=document.createElement('button');b.className='dyn-tab'+(state.dyn===d.id?' active':'');b.id='dyntab-'+d.id;
+    b.innerHTML=`<span style="font-size:.75rem;opacity:.7">${d.nameZh}</span><br>${d.name}`;
+    b.onclick=()=>selDyn(d.id);
+    c.appendChild(b);
+  });
+}
+function selDyn(did){
+  state.dyn=did;state.selGarment=null;state.gLayers={};
+  document.querySelectorAll('.dyn-tab').forEach(b=>b.classList.remove('active'));
+  const tb=document.getElementById('dyntab-'+did);if(tb)tb.classList.add('active');
+  if(!prog.dynsVisited.includes(did)){prog.dynsVisited.push(did);saveP();checkAch()}
+  renderGarGrid();renderMannequin();updOutfit();
+}
+
+// ============================
+// MANNEQUIN
+// ============================
+function buildMannequin(){
+  const sk=state.skin?state.skin.color:'#FDDCB5',skD=darken(sk,15);
+  let s=`<svg viewBox="0 0 200 500" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="gl" cx="100" cy="250" r="160" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="${sk}" stop-opacity=".12"/><stop offset="100%" stop-color="${sk}" stop-opacity="0"/></radialGradient></defs>`;
+  s+=`<ellipse cx="100" cy="260" rx="80" ry="200" fill="url(#gl)"/>`;
+  s+=bodySVG(sk,skD);
+  const gars=getCurrentGarments();
+  gars.forEach(g=>{const v=state.gLayers[g.id]?'visible':'';s+=`<g class="garment-layer ${v}" id="layer-${g.id}">`;s+=garmentSVG(g);s+=`</g>`});
+  s+=`</svg>`;return s;
+}
+function bodySVG(s,d){
+  let r=`<circle cx="100" cy="68" r="28" fill="${s}" stroke="${d}" stroke-width="0.5"/>`;
+  r+=`<rect x="91" y="94" width="18" height="18" rx="5" fill="${s}"/>`;
+  r+=`<path d="M62,115 Q60,112 62,108 L78,104 Q90,102 100,102 Q110,102 122,104 L138,108 Q140,112 138,115 L140,195 Q140,210 130,215 L70,215 Q60,210 60,195 Z" fill="${s}" stroke="${d}" stroke-width="0.5"/>`;
+  r+=`<path d="M60,108 Q50,112 46,130 L42,175 Q40,190 46,200 L50,205 Q54,205 56,200 L52,180 Q50,165 52,150 L58,125 Z" fill="${s}" stroke="${d}" stroke-width="0.5"/>`;
+  r+=`<path d="M140,108 Q150,112 154,130 L158,175 Q160,190 154,200 L150,205 Q146,205 144,200 L148,180 Q150,165 148,150 L142,125 Z" fill="${s}" stroke="${d}" stroke-width="0.5"/>`;
+  r+=`<ellipse cx="52" cy="208" rx="8" ry="10" fill="${s}"/><ellipse cx="148" cy="208" rx="8" ry="10" fill="${s}"/>`;
+  r+=`<rect x="68" y="215" width="28" height="195" rx="12" fill="${s}" stroke="${d}" stroke-width="0.5"/>`;
+  r+=`<rect x="104" y="215" width="28" height="195" rx="12" fill="${s}" stroke="${d}" stroke-width="0.5"/>`;
+  r+=`<ellipse cx="82" cy="415" rx="16" ry="8" fill="${d}"/><ellipse cx="118" cy="415" rx="16" ry="8" fill="${d}"/>`;
+  return r;
+}
+function getCurrentGarments(){
+  if(state.cat==='qipao')return G.qipao;
+  if(state.cat==='hanfu')return state.dyn&&G.hanfu[state.dyn]?G.hanfu[state.dyn]:[];
+  if(state.cat==='ethnic')return G.ethnic;
+  return[];
+}
+function garmentSVG(g){
+  const c1=g.color,c2=g.color2;let s='';const id=g.id;
+  if(id==='qipao-1'||id==='qipao-2'||id==='qipao-3'){
+    s+=`<path d="M64,100 Q60,104 60,115 L58,280 Q58,290 62,300 L72,370 Q76,390 82,420 L118,420 Q124,390 128,370 L138,300 Q142,290 142,280 L140,115 Q140,104 136,100 L122,96 Q112,94 100,94 Q88,94 78,96 Z" fill="${c1}" stroke="${c2}" stroke-width="1.2" opacity=".92"/>`;
+    s+=`<path d="M86,94 L100,104 L114,94 L112,90 L100,98 L88,90 Z" fill="${c2}" opacity=".85"/>`;
+    s+=`<circle cx="92" cy="114" r="3" fill="${c2}" opacity=".8"/><circle cx="92" cy="130" r="3" fill="${c2}" opacity=".8"/><circle cx="92" cy="146" r="3" fill="${c2}" opacity=".8"/>`;
+    s+=`<path d="M82,350 Q78,360 80,370 Q82,385 88,420" fill="none" stroke="${c2}" stroke-width="2" opacity=".6"/>`;
+  }
+  else if(id==='hanfu-zg-1'){
+    s+=`<path d="M48,100 Q42,106 42,115 L38,200 L36,350 Q34,370 40,390 L48,420 Q52,428 60,430 L140,430 Q148,428 152,420 L160,390 Q166,370 164,350 L162,200 L158,115 Q158,106 152,100 L134,94 Q118,88 100,88 Q82,88 66,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M42,108 Q22,120 12,160 L4,210 Q2,230 8,248 L18,252 Q26,252 30,244 L38,200 L42,170 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M158,108 Q178,120 188,160 L196,210 Q198,230 192,248 L182,252 Q174,252 170,244 L162,200 L158,170 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M78,94 L100,135 L122,94" fill="none" stroke="${c2}" stroke-width="3" opacity=".7"/>`;
+    s+=`<rect x="50" y="215" width="100" height="12" rx="6" fill="${c2}" opacity=".6"/>`;
+    s+=`<path d="M95,227 Q88,270 92,320 Q94,345 90,375" fill="none" stroke="${c2}" stroke-width="2.5" opacity=".5"/>`;
+    s+=`<path d="M105,227 Q112,270 108,320 Q106,345 110,375" fill="none" stroke="${c2}" stroke-width="2.5" opacity=".5"/>`;
+  }
+  else if(id==='hanfu-wj-1'){
+    s+=`<path d="M50,100 Q44,106 44,115 L40,200 L36,360 Q34,378 42,395 L52,425 Q56,432 64,434 L136,434 Q144,432 148,425 L158,395 Q166,378 164,360 L160,200 L156,115 Q156,106 150,100 L132,94 Q116,88 100,88 Q84,88 68,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".85"/>`;
+    s+=`<path d="M44,110 Q28,120 16,155 L6,200 Q4,218 10,235 L18,238 Q24,238 28,230 L36,196 L42,170 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".85"/>`;
+    s+=`<path d="M156,110 Q172,120 184,155 L194,200 Q196,218 190,235 L182,238 Q176,238 172,230 L164,196 L158,170 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".85"/>`;
+    s+=`<path d="M68,215 Q58,260 62,310 Q58,350 52,400 Q48,430 54,450" fill="none" stroke="${lighten(c1,20)}" stroke-width="4" opacity=".5"/>`;
+    s+=`<path d="M132,215 Q142,260 138,310 Q142,350 148,400 Q152,430 146,450" fill="none" stroke="${lighten(c1,20)}" stroke-width="4" opacity=".5"/>`;
+    s+=`<path d="M80,220 Q74,280 78,340 Q76,380 72,420" fill="none" stroke="${lighten(c1,30)}" stroke-width="2.5" opacity=".35"/>`;
+    s+=`<path d="M120,220 Q126,280 122,340 Q124,380 128,420" fill="none" stroke="${lighten(c1,30)}" stroke-width="2.5" opacity=".35"/>`;
+    s+=`<path d="M82,94 L100,130 L118,94" fill="none" stroke="${c2}" stroke-width="2" opacity=".7"/>`;
+  }
+  else if(id==='hanfu-tang-1'){
+    s+=`<path d="M52,100 Q48,104 48,115 L44,200 L40,340 Q38,355 42,370 L56,410 Q60,420 70,425 L130,425 Q140,420 144,410 L158,370 Q162,355 160,340 L156,200 L152,115 Q152,104 148,100 L130,94 Q115,90 100,90 Q85,90 70,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M48,110 Q30,120 18,155 L8,200 Q4,220 10,235 L20,240 Q28,240 32,230 L40,195 L46,170 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M152,110 Q170,120 182,155 L192,200 Q196,220 190,235 L180,240 Q172,240 168,230 L160,195 L154,170 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<circle cx="100" cy="96" r="16" fill="none" stroke="${c2}" stroke-width="2.5" opacity=".8"/>`;
+    s+=`<rect x="56" y="210" width="88" height="10" rx="5" fill="${c2}" opacity=".7"/>`;
+    s+=`<path d="M96,220 Q90,260 94,310 Q96,330 92,360" fill="none" stroke="${c2}" stroke-width="2.5" opacity=".6"/>`;
+    s+=`<path d="M104,220 Q110,260 106,310 Q104,330 108,360" fill="none" stroke="${c2}" stroke-width="2.5" opacity=".6"/>`;
+  }
+  else if(id==='hanfu-tang-2'){
+    s+=`<path d="M62,100 Q58,104 58,110 L56,145 L56,150 Q56,155 62,158 L138,158 Q144,155 144,150 L144,145 L142,110 Q142,104 138,100 L122,94 Q112,92 100,92 Q88,92 78,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".9"/>`;
+    s+=`<path d="M82,94 L100,120 L118,94" fill="none" stroke="${c2}" stroke-width="2" opacity=".7"/>`;
+    s+=`<path d="M50,155 Q48,158 50,165 L46,300 Q44,340 48,370 L54,410 Q58,425 66,430 L134,430 Q142,425 146,410 L152,370 Q156,340 154,300 L150,165 Q152,158 150,155 Z" fill="${c2}" opacity=".85"/>`;
+    s+=`<path d="M56,155 Q100,148 144,155" fill="none" stroke="${c1}" stroke-width="3" opacity=".7"/>`;
+    for(let i=0;i<10;i++){const x=55+i*9;s+=`<line x1="${x}" y1="180" x2="${x+(i%2?2:-2)}" y2="430" stroke="${c1}" stroke-width=".6" opacity=".25"/>`}
+    s+=`<path d="M58,106 Q46,110 42,125 L40,140 Q40,148 46,150 L52,150 Q56,148 56,142 L58,128 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".9"/>`;
+    s+=`<path d="M142,106 Q154,110 158,125 L160,140 Q160,148 154,150 L148,150 Q144,148 144,142 L142,128 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".9"/>`;
+  }
+  else if(id==='hanfu-song-1'){
+    s+=`<path d="M66,100 Q62,104 62,110 L60,200 L60,220 Q60,225 66,228 L134,228 Q140,225 140,220 L140,200 L138,110 Q138,104 134,100 L120,95 Q110,92 100,92 Q90,92 80,95 Z" fill="${c2}" stroke="${darken(c2,15)}" stroke-width=".8" opacity=".7"/>`;
+    s+=`<path d="M82,95 L100,120 L118,95" fill="none" stroke="${darken(c2,15)}" stroke-width="1.5" opacity=".6"/>`;
+    s+=`<path d="M52,100 Q48,104 48,110 L44,200 L40,360 Q38,375 44,388 L54,410 Q58,418 66,420 L96,420 L96,110 Q94,104 86,100 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".85"/>`;
+    s+=`<path d="M148,100 Q152,104 152,110 L156,200 L160,360 Q162,375 156,388 L146,410 Q142,418 134,420 L104,420 L104,110 Q106,104 114,100 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".85"/>`;
+    s+=`<line x1="94" y1="96" x2="94" y2="160" stroke="${c2}" stroke-width="1.5" opacity=".6"/>`;
+    s+=`<line x1="106" y1="96" x2="106" y2="160" stroke="${c2}" stroke-width="1.5" opacity=".6"/>`;
+    s+=`<path d="M48,108 Q32,116 24,140 L18,175 Q16,190 22,200 L28,202 Q34,202 36,196 L42,170 L46,150 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".85"/>`;
+    s+=`<path d="M152,108 Q168,116 176,140 L182,175 Q184,190 178,200 L172,202 Q166,202 164,196 L158,170 L154,150 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".85"/>`;
+  }
+  else if(id==='hanfu-song-2'){
+    s+=`<path d="M62,100 Q58,104 58,110 L56,200 L56,218 Q56,224 62,226 L138,226 Q144,224 144,218 L144,200 L142,110 Q142,104 138,100 L122,94 Q112,92 100,92 Q88,92 78,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M82,94 L100,125 L118,94" fill="none" stroke="${c2}" stroke-width="2.5" opacity=".75"/>`;
+    s+=`<path d="M90,94 L100,115 L110,94" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".65"/>`;
+    s+=`<path d="M58,108 Q48,112 44,128 L40,160 Q38,172 44,180 L50,182 Q54,182 56,176 L58,158 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".88"/>`;
+    s+=`<path d="M142,108 Q152,112 156,128 L160,160 Q162,172 156,180 L150,182 Q146,182 144,176 L142,158 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".88"/>`;
+    s+=`<path d="M54,224 L44,425 L156,425 L146,224 Z" fill="${c2}" opacity=".82"/>`;
+    for(let i=0;i<10;i++){const x=50+i*10;s+=`<line x1="${x}" y1="240" x2="${x+(i%2?1:-1)}" y2="425" stroke="${c1}" stroke-width=".6" opacity=".2"/>`}
+  }
+  else if(id==='hanfu-ming-1'){
+    s+=`<path d="M62,100 Q58,104 58,110 L56,200 L56,218 Q56,224 62,226 L138,226 Q144,224 144,218 L144,200 L142,110 Q142,104 138,100 L122,94 Q112,92 100,92 Q88,92 78,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M84,94 L100,118 L116,94" fill="none" stroke="${c2}" stroke-width="2" opacity=".7"/>`;
+    s+=`<path d="M58,108 Q48,112 44,128 L40,160 Q38,172 44,180 L50,182 Q54,182 56,176 L58,158 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".88"/>`;
+    s+=`<path d="M142,108 Q152,112 156,128 L160,160 Q162,172 156,180 L150,182 Q146,182 144,176 L142,158 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".88"/>`;
+    s+=`<path d="M48,224 L38,425 L112,425 L112,224 Z" fill="${c2}" opacity=".82"/>`;
+    s+=`<path d="M88,224 L88,425 L162,425 L152,224 Z" fill="${c2}" opacity=".72"/>`;
+    s+=`<rect x="76" y="224" width="48" height="201" rx="2" fill="${lighten(c2,15)}" opacity=".5"/>`;
+    s+=`<line x1="76" y1="224" x2="76" y2="425" stroke="#C9A96E" stroke-width="1.5" opacity=".5"/>`;
+    s+=`<line x1="124" y1="224" x2="124" y2="425" stroke="#C9A96E" stroke-width="1.5" opacity=".5"/>`;
+    for(let i=0;i<5;i++){const x=48+i*6;s+=`<line x1="${x}" y1="250" x2="${x+1}" y2="425" stroke="${c1}" stroke-width=".6" opacity=".3"/>`}
+    for(let i=0;i<5;i++){const x=134+i*6;s+=`<line x1="${x}" y1="250" x2="${x-1}" y2="425" stroke="${c1}" stroke-width=".6" opacity=".3"/>`}
+  }
+  else if(id==='hanfu-ming-2'){
+    s+=`<path d="M58,100 Q54,104 54,110 L52,200 L50,340 Q48,360 52,380 L58,410 Q62,425 70,428 L130,428 Q138,425 142,410 L148,380 Q152,360 150,340 L148,200 L146,110 Q146,104 142,100 L126,94 Q113,90 100,90 Q87,90 74,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M86,94 Q86,80 90,78 L110,78 Q114,80 114,94 L112,96 L88,96 Z" fill="${c2}" opacity=".8"/>`;
+    s+=`<path d="M88,78 L88,74 Q88,70 92,68 L108,68 Q112,70 112,74 L112,78" fill="none" stroke="${c2}" stroke-width="2" opacity=".7"/>`;
+    s+=`<circle cx="100" cy="100" r="3" fill="#C9A96E" opacity=".7"/><circle cx="100" cy="118" r="3" fill="#C9A96E" opacity=".7"/><circle cx="100" cy="136" r="3" fill="#C9A96E" opacity=".7"/>`;
+    s+=`<path d="M54,108 Q40,114 34,132 L28,165 Q26,178 32,186 L38,188 Q44,188 46,182 L50,160 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".88"/>`;
+    s+=`<path d="M146,108 Q160,114 166,132 L172,165 Q174,178 168,186 L162,188 Q156,188 154,182 L150,160 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".88"/>`;
+    s+=`<rect x="52" y="215" width="96" height="10" rx="5" fill="${c2}" opacity=".65"/>`;
+  }
+  else if(id==='ethnic-1'){
+    s+=`<path d="M58,100 Q54,104 54,115 L50,200 L48,300 Q46,320 50,340 L54,400 Q56,415 62,425 L138,425 Q144,415 146,400 L150,340 Q154,320 152,300 L150,200 L146,115 Q146,104 142,100 L126,94 Q113,90 100,90 Q87,90 74,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M54,110 Q38,118 30,145 L24,185 Q22,200 28,210 L36,212 Q42,212 44,205 L48,180 L52,160 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M146,110 Q162,118 170,145 L176,185 Q178,200 172,210 L164,212 Q158,212 156,205 L152,180 L148,160 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M72,68 Q68,50 72,35 Q78,22 100,18 Q122,22 128,35 Q132,50 128,68 Z" fill="#C0C0C0" stroke="#A0A0A0" stroke-width="1"/>`;
+    s+=`<circle cx="80" cy="40" r="4" fill="#E0E0E0" opacity=".9"/><circle cx="100" cy="32" r="5" fill="#E0E0E0" opacity=".9"/><circle cx="120" cy="40" r="4" fill="#E0E0E0" opacity=".9"/>`;
+    s+=`<ellipse cx="100" cy="92" rx="22" ry="4" fill="none" stroke="#C0C0C0" stroke-width="2.5"/><ellipse cx="100" cy="96" rx="24" ry="4" fill="none" stroke="#C0C0C0" stroke-width="2"/>`;
+    for(let i=0;i<12;i++){const x=52+i*8;s+=`<line x1="${x}" y1="220" x2="${x+(i%2?2:-2)}" y2="425" stroke="${c2}" stroke-width=".8" opacity=".4"/>`}
+    s+=`<rect x="52" y="210" width="96" height="12" rx="6" fill="#C0C0C0" opacity=".6"/>`;
+  }
+  else if(id==='ethnic-2'){
+    s+=`<path d="M58,100 Q54,104 54,115 L50,200 L48,300 Q46,320 50,340 L54,400 Q56,415 62,425 L138,425 Q144,415 146,400 L150,340 Q154,320 152,300 L150,200 L146,115 Q146,104 142,100 L126,94 Q113,90 100,90 Q87,90 74,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M54,110 Q38,118 30,145 L24,185 Q22,200 28,210 L36,212 Q42,212 44,205 L48,180 L52,160 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M146,110 Q162,118 170,145 L176,185 Q178,200 172,210 L164,212 Q158,212 156,205 L152,180 L148,160 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<rect x="48" y="200" width="104" height="18" rx="9" fill="${c2}" opacity=".8"/>`;
+    s+=`<path d="M92,218 L88,260 Q86,280 90,310 L96,318 Q100,320 104,318 L110,310 Q114,280 112,260 L108,218 Z" fill="${c2}" opacity=".6"/>`;
+    s+=`<path d="M70,100 Q60,106 58,115 L56,200 L56,340 L100,340 L100,115 Q98,106 88,100 Z" fill="${c2}" opacity=".3"/>`;
+  }
+  else if(id==='ethnic-3'){
+    s+=`<path d="M58,100 Q54,104 54,115 L50,200 L48,300 Q46,320 50,340 L54,400 Q56,415 62,425 L138,425 Q144,415 146,400 L150,340 Q154,320 152,300 L150,200 L146,115 Q146,104 142,100 L126,94 Q113,90 100,90 Q87,90 74,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M54,110 Q38,118 30,145 L24,185 Q22,200 28,210 L36,212 Q42,212 44,205 L48,180 L52,160 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M146,110 Q162,118 170,145 L176,185 Q178,200 172,210 L164,212 Q158,212 156,205 L152,180 L148,160 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M54,220 L40,425 L160,425 L146,220 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".5"/>`;
+    const ik=['#E6B422','#C41E3A','#2E7D5B','#E8D5C0'];
+    for(let i=0;i<8;i++){const x=60+i*12,y=240+(i%3)*40;s+=`<ellipse cx="${x}" cy="${y}" rx="8" ry="12" fill="${ik[i%4]}" opacity=".35"/>`}
+    for(let i=0;i<6;i++){const x=70+i*14,y=320+(i%2)*30;s+=`<ellipse cx="${x}" cy="${y}" rx="10" ry="14" fill="${ik[(i+2)%4]}" opacity=".25"/>`}
+    s+=`<path d="M78,94 L100,108 L122,94" fill="none" stroke="#E6B422" stroke-width="3" opacity=".7"/>`;
+    s+=`<ellipse cx="100" cy="48" rx="18" ry="8" fill="${c2}" opacity=".7"/><rect x="82" y="38" width="36" height="10" rx="5" fill="${c2}" opacity=".7"/>`;
+  }
+  else if(id==='ethnic-4'){
+    s+=`<path d="M56,100 Q52,104 52,110 L50,200 L48,340 Q46,360 50,378 L56,408 Q60,420 68,424 L132,424 Q140,420 144,408 L150,378 Q154,360 152,340 L150,200 L148,110 Q148,104 144,100 L128,94 Q114,90 100,90 Q86,90 72,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M70,100 Q62,106 60,112 L58,200 L56,340 L100,340 L100,112 Q98,106 90,100 Z" fill="${c2}" opacity=".25"/>`;
+    s+=`<path d="M86,94 L100,100 L114,94" fill="none" stroke="${c2}" stroke-width="2.5" opacity=".7"/>`;
+    s+=`<path d="M52,108 Q36,116 28,140 L22,170 Q20,185 26,195 L22,215 Q20,225 26,232 L32,234 Q38,232 40,224 L42,195 L48,168 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".88"/>`;
+    s+=`<path d="M148,108 Q164,116 172,140 L178,170 Q180,185 174,195 L178,215 Q180,225 174,232 L168,234 Q162,232 160,224 L158,195 L152,168 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".88"/>`;
+    s+=`<rect x="46" y="205" width="108" height="16" rx="8" fill="${c2}" opacity=".75"/>`;
+    s+=`<circle cx="100" cy="222" r="6" fill="${c2}" opacity=".6"/>`;
+  }
+  else if(id==='ethnic-5'){
+    s+=`<path d="M58,100 Q54,104 54,110 L52,200 L50,340 Q48,360 52,378 L58,408 Q62,420 70,424 L130,424 Q138,420 142,408 L148,378 Q152,360 150,340 L148,200 L146,110 Q146,104 142,100 L126,94 Q113,90 100,90 Q87,90 74,94 Z" fill="${c1}" stroke="${c2}" stroke-width="1" opacity=".88"/>`;
+    s+=`<path d="M88,94 L88,78 L112,78 L112,94" fill="none" stroke="${c2}" stroke-width="2" opacity=".7"/>`;
+    s+=`<path d="M54,108 Q44,112 40,128 L36,155 Q34,168 40,178 L36,195 Q34,205 40,212 L48,215 Q54,215 54,205 L54,178 L56,155 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".88"/>`;
+    s+=`<path d="M36,195 Q34,205 38,212 L46,215 L48,210 Q42,205 40,198 Z" fill="${c2}" opacity=".6"/>`;
+    s+=`<path d="M146,108 Q156,112 160,128 L164,155 Q166,168 160,178 L164,195 Q166,205 160,212 L152,215 Q146,215 146,205 L146,178 L144,155 Z" fill="${c1}" stroke="${c2}" stroke-width=".8" opacity=".88"/>`;
+    s+=`<path d="M164,195 Q166,205 162,212 L154,215 L152,210 Q158,205 160,198 Z" fill="${c2}" opacity=".6"/>`;
+    s+=`<line x1="52" y1="100" x2="50" y2="424" stroke="#C9A96E" stroke-width="2" opacity=".5"/>`;
+    s+=`<line x1="148" y1="100" x2="150" y2="424" stroke="#C9A96E" stroke-width="2" opacity=".5"/>`;
+    s+=`<line x1="50" y1="424" x2="150" y2="424" stroke="#C9A96E" stroke-width="2" opacity=".5"/>`;
+    s+=`<circle cx="100" cy="108" r="3" fill="#C9A96E" opacity=".7"/><circle cx="100" cy="128" r="3" fill="#C9A96E" opacity=".7"/><circle cx="100" cy="148" r="3" fill="#C9A96E" opacity=".7"/>`;
+  }
+  return s;
+}
+function renderMannequin(){document.getElementById('mannequin-svg').innerHTML=buildMannequin()}
+
+// ============================
+// GARMENT GRID
+// ============================
+function renderGarGrid(){
+  const grid=document.getElementById('garment-grid');
+  const catId=state.cat,cat=CATEGORIES.find(c=>c.id===catId);
+  const gars=getCurrentGarments();
+  const dynInfo=state.cat==='hanfu'?DYNASTIES.find(d=>d.id===state.dyn):null;
+  let html='';
+  if(state.cat==='hanfu'&&dynInfo){
+    html+=`<div class="animate-in" style="margin-bottom:1.5rem"><p style="color:${cat.accent};letter-spacing:.2em;text-transform:uppercase;font-size:.78rem;font-weight:700;margin-bottom:.4rem">${dynInfo.nameZh} · ${dynInfo.name} Dynasty</p><h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:.3rem">${dynInfo.name} Dynasty Garments</h3><p style="color:var(--muted);font-size:.9rem">${dynInfo.era} · ${gars.length} style${gars.length>1?'s':''}</p></div>`;
+  }else{
+    html+=`<div class="animate-in" style="margin-bottom:1.5rem"><p style="color:${cat.accent};letter-spacing:.2em;text-transform:uppercase;font-size:.78rem;font-weight:700;margin-bottom:.4rem">${cat.nameZh} · ${cat.name}</p><h3 style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;margin-bottom:.3rem">Select Your Garment</h3><p style="color:var(--muted);font-size:.9rem">${gars.length} style${gars.length>1?'s':''} available</p></div>`;
+  }
+  html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.1rem">`;
+  gars.forEach((g,i)=>{
+    const tried=prog.garmentsTried.includes(g.id),read=prog.cardsRead.includes(g.id);
+    html+=`<div class="garment-card animate-in" id="gc-${g.id}" onclick="togGar('${g.id}')" style="animation-delay:${i*.08}s">
+      <div style="height:160px;position:relative;overflow:hidden;background:linear-gradient(135deg,${g.color},${g.color2});display:flex;align-items:center;justify-content:center">
+        <p style="color:rgba(255,255,255,.12);font-size:4.5rem;font-family:'Playfair Display',serif;font-weight:900">${cat.name.charAt(0)}</p>
+        <div style="position:absolute;top:8px;right:8px;display:flex;gap:3px">
+          ${tried?'<span style="background:rgba(255,255,255,.2);color:white;padding:2px 7px;border-radius:3px;font-size:.65rem"><i class="fas fa-check" style="margin-right:2px"></i>Tried</span>':''}
+          ${read?'<span style="background:rgba(201,169,110,.4);color:white;padding:2px 7px;border-radius:3px;font-size:.65rem"><i class="fas fa-book" style="margin-right:2px"></i>Read</span>':''}
+        </div>
+        <div style="position:absolute;bottom:10px;left:10px"><span style="background:rgba(0,0,0,.35);color:white;padding:2px 8px;border-radius:3px;font-size:.7rem;backdrop-filter:blur(4px)">${g.era}</span></div>
+      </div>
+      <div style="padding:.85rem .95rem">
+        <h4 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:2px">${g.name}</h4>
+        <p style="color:var(--muted);font-size:.72rem;margin-bottom:4px">${g.nameZh}</p>
+        <p style="color:var(--fg);font-size:.78rem;opacity:.65">${g.type}</p>
+        <div style="margin-top:6px;display:flex;align-items:center;gap:5px">
+          <div style="width:12px;height:12px;border-radius:50%;background:${g.color};border:1px solid rgba(0,0,0,.1)"></div>
+          <div style="width:12px;height:12px;border-radius:50%;background:${g.color2};border:1px solid rgba(0,0,0,.1)"></div>
+          <span style="font-size:.7rem;color:var(--muted);margin-left:auto" id="gc-s-${g.id}">Tap to select</span>
+        </div>
+      </div>
+    </div>`;
+  });
+  html+=`</div>`;grid.innerHTML=html;
+  setTimeout(()=>grid.querySelectorAll('.animate-in').forEach((el,i)=>setTimeout(()=>el.classList.add('visible'),i*80)),50);
+}
+function togGar(gid){
+  const gars=getCurrentGarments();
+  gars.forEach(g=>{if(g.id!==gid){state.gLayers[g.id]=false;const c=document.getElementById('gc-'+g.id);if(c)c.classList.remove('selected');const s=document.getElementById('gc-s-'+g.id);if(s)s.textContent='Tap to select'}});
+  const was=state.gLayers[gid];state.gLayers[gid]=!was;
+  const card=document.getElementById('gc-'+gid),st=document.getElementById('gc-s-'+gid);
+  if(!was){if(card)card.classList.add('selected');if(st)st.textContent='Selected';state.selGarment=gars.find(g=>g.id===gid);gars.forEach(g=>state.gLayers[g.id]=g.id===gid);if(!prog.garmentsTried.includes(gid)){prog.garmentsTried.push(gid);saveP();checkAch()}}
+  else{if(card)card.classList.remove('selected');if(st)st.textContent='Tap to select';state.selGarment=null;state.gLayers[gid]=false}
+  updOutfit();renderMannequin();
+}
+function clearOutfit(){getCurrentGarments().forEach(g=>{state.gLayers[g.id]=false;const c=document.getElementById('gc-'+g.id);if(c)c.classList.remove('selected');const s=document.getElementById('gc-s-'+g.id);if(s)s.textContent='Tap to select'});state.selGarment=null;updOutfit();renderMannequin()}
+function updOutfit(){
+  const sum=document.getElementById('outfit-summary'),btn=document.getElementById('btn-complete');
+  if(state.selGarment){sum.innerHTML=`<p style="color:var(--fg);font-size:.88rem;font-weight:600">Wearing: ${state.selGarment.name} <span style="color:var(--muted);font-weight:400">(${state.selGarment.era})</span></p>`;btn.disabled=false}
+  else{sum.innerHTML=`<p style="color:var(--muted);font-size:.85rem">Select a garment</p>`;btn.disabled=true}
+}
+
+// ============================
+// KNOWLEDGE CARD
+// ============================
+function showKnowledge(){
+  if(!state.selGarment)return;const g=state.selGarment,cat=CATEGORIES.find(c=>c.id===state.cat);
+  if(!prog.cardsRead.includes(g.id)){prog.cardsRead.push(g.id);saveP();checkAch()}
+  document.getElementById('k-card').innerHTML=`
+    <div style="position:relative"><div style="background:linear-gradient(135deg,${g.color},${g.color2});padding:2.2rem 1.8rem 1.8rem;position:relative;overflow:hidden"><div style="position:absolute;top:-20px;right:-20px;font-size:7rem;font-family:'Playfair Display',serif;font-weight:900;color:rgba(255,255,255,.06)">知</div><p style="color:rgba(255,255,255,.6);font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px">Knowledge Card</p><h2 style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:white;margin-bottom:3px">${g.name}</h2><p style="color:rgba(255,255,255,.65);font-size:.95rem">${g.nameZh}</p><div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="seal">${g.era}</span><span style="background:rgba(255,255,255,.15);color:white;padding:5px 14px;border-radius:4px;font-size:.82rem">${g.type}</span></div></div><button onclick="closeKnowledge()" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,.3);color:white;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center" aria-label="Close"><i class="fas fa-times"></i></button></div>
+    <div style="padding:1.8rem">
+      <div style="margin-bottom:1.5rem"><h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:7px"><i class="fas fa-scroll" style="color:${cat.accent};font-size:.85rem"></i>Historical Background</h3><p style="font-size:.88rem;line-height:1.75">${g.desc}</p></div>
+      <div style="margin-bottom:1.5rem;background:linear-gradient(135deg,rgba(196,30,58,.04),rgba(201,169,110,.06));padding:1.1rem;border-radius:12px;border-left:4px solid ${cat.accent}"><h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:7px"><i class="fas fa-landmark" style="color:${cat.accent};font-size:.85rem"></i>Cultural Significance</h3><p style="font-size:.88rem;line-height:1.75">${g.culture}</p></div>
+      <div style="margin-bottom:1.5rem"><h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:7px"><i class="fas fa-paint-brush" style="color:${cat.accent};font-size:.85rem"></i>Craftsmanship & Technique</h3><p style="font-size:.88rem;line-height:1.75">${g.craft}</p></div>
+      <div style="margin-bottom:1.25rem"><p style="color:var(--muted);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px">Color Palette</p><div style="display:flex;gap:6px"><div style="width:36px;height:36px;border-radius:8px;background:${g.color};border:1px solid rgba(0,0,0,.1)"></div><div style="width:36px;height:36px;border-radius:8px;background:${g.color2};border:1px solid rgba(0,0,0,.1)"></div><div style="width:36px;height:36px;border-radius:8px;background:var(--gold);border:1px solid rgba(0,0,0,.1)"></div></div></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:.85rem;border-top:1px solid var(--border)"><button class="btn-outline" style="font-size:.82rem;padding:10px 20px" onclick="closeKnowledge()"><i class="fas fa-arrow-left" style="margin-right:5px"></i>Back</button><button class="btn-primary" style="font-size:.82rem;padding:10px 20px" onclick="closeKnowledge();goToCategories()"><i class="fas fa-th-large" style="margin-right:5px"></i>Explore More</button></div>
+    </div>`;
+  document.getElementById('knowledge-overlay').classList.add('active');document.body.style.overflow='hidden';
+  setTimeout(()=>renderGarGrid(),300);
+}
+function closeKnowledge(){document.getElementById('knowledge-overlay').classList.remove('active');document.body.style.overflow=''}
+
+// ============================
+// UTILS
+// ============================
+function darken(h,p){const n=parseInt(h.replace('#',''),16),a=Math.round(2.55*p),R=Math.max((n>>16)-a,0),Gr=Math.max((n>>8&0xFF)-a,0),B=Math.max((n&0xFF)-a,0);return'#'+(0x1000000+R*0x10000+Gr*0x100+B).toString(16).slice(1)}
+function lighten(h,p){const n=parseInt(h.replace('#',''),16),a=Math.round(2.55*p),R=Math.min((n>>16)+a,255),Gr=Math.min((n>>8&0xFF)+a,255),B=Math.min((n&0xFF)+a,255);return'#'+(0x1000000+R*0x10000+Gr*0x100+B).toString(16).slice(1)}
+function initParticles(){const c=document.getElementById('particles');for(let i=0;i<16;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'vw';p.style.top=Math.random()*100+'vh';const s=2+Math.random()*3;p.style.width=s+'px';p.style.height=s+'px';p.style.opacity=.04+Math.random()*.06;p.style.background=Math.random()>.5?'var(--gold)':'var(--accent)';p.style.animation=`floatSlow ${6+Math.random()*8}s ease-in-out ${Math.random()*5}s infinite`;c.appendChild(p)}}
+
+// ============================
+// INIT
+// ============================
+function init(){
+  loadP();renderSkinOpts();initParticles();updFab();
+  if(prog._skin){const t=SKIN_TONES.find(s=>s.id===prog._skin);if(t)selSkin(t)}
+  setTimeout(()=>document.getElementById('splash').classList.add('hidden'),2500);
+  setTimeout(()=>{const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')}),{threshold:.1});document.querySelectorAll('.animate-in').forEach(el=>obs.observe(el))},3000);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeKnowledge();closeAchPanel();closeSharePanel()}});
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
